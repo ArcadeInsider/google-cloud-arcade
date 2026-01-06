@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# ===== FIX WINDOWS LINE ENDINGS (VERY IMPORTANT) =====
+sed -i 's/\r$//' "$0"
+
 # ================== COLORS ==================
 CYAN='\033[0;96m'
 GREEN='\033[0;92m'
@@ -18,12 +21,16 @@ echo -e "${CYAN}${BOLD}==================================================${RESET
 echo -e "${GREEN}${BOLD}   Easy • Direct • One-Click Commands${RESET}"
 echo
 
-# ================== INPUT ==================
-read -p "$(echo -e ${YELLOW}${BOLD}Enter ZONE (example: us-central1-a): ${RESET})" ZONE
-read -p "$(echo -e ${YELLOW}${BOLD}Enter SECOND REGION (example: us-east1): ${RESET})" REGION_2
+# ================== INPUT (SAFE WAY) ==================
+echo -e "${YELLOW}${BOLD}Enter ZONE (example: us-central1-a): ${RESET}"
+read ZONE
 
+echo -e "${YELLOW}${BOLD}Enter SECOND REGION (example: us-east1): ${RESET}"
+read REGION_2
+
+# ================== VARIABLES ==================
 REGION="${ZONE%-*}"
-PROJECT_ID=$(gcloud config get-value project)
+PROJECT_ID="$(gcloud config get-value project)"
 
 export PROJECT_ID ZONE REGION REGION_2
 
@@ -34,23 +41,25 @@ echo -e "${GREEN}${BOLD}Zone:${RESET} $ZONE"
 echo
 
 # ================== NETWORK SETUP ==================
-gcloud compute networks create managementnet --subnet-mode=custom || true
+gcloud compute networks create managementnet \
+--subnet-mode=custom || true
 
 gcloud compute networks subnets create managementsubnet-1 \
 --network=managementnet \
---region=$REGION \
+--region="$REGION" \
 --range=10.130.0.0/20 || true
 
-gcloud compute networks create privatenet --subnet-mode=custom || true
+gcloud compute networks create privatenet \
+--subnet-mode=custom || true
 
 gcloud compute networks subnets create privatesubnet-1 \
 --network=privatenet \
---region=$REGION \
+--region="$REGION" \
 --range=172.16.0.0/24 || true
 
 gcloud compute networks subnets create privatesubnet-2 \
 --network=privatenet \
---region=$REGION_2 \
+--region="$REGION_2" \
 --range=172.20.0.0/20 || true
 
 # ================== FIREWALL RULES ==================
@@ -66,17 +75,17 @@ gcloud compute firewall-rules create privatenet-allow-icmp-ssh-rdp \
 
 # ================== VM CREATION ==================
 gcloud compute instances create managementnet-vm-1 \
---zone=$ZONE \
+--zone="$ZONE" \
 --machine-type=e2-micro \
 --subnet=managementsubnet-1 || true
 
 gcloud compute instances create privatenet-vm-1 \
---zone=$ZONE \
+--zone="$ZONE" \
 --machine-type=e2-micro \
 --subnet=privatesubnet-1 || true
 
 gcloud compute instances create vm-appliance \
---zone=$ZONE \
+--zone="$ZONE" \
 --machine-type=e2-standard-4 \
 --network-interface=subnet=privatesubnet-1 \
 --network-interface=subnet=managementsubnet-1 || true
@@ -84,9 +93,8 @@ gcloud compute instances create vm-appliance \
 # ================== COMPLETED ==================
 echo
 echo -e "${CYAN}${BOLD}==================================================${RESET}"
-echo -e "${GREEN}${BOLD}   🎉 LAB COMPLETED SUCCESSFULLY – CAMPUSPERKS 🎉 ${RESET}"
+echo -e "${GREEN}${BOLD} 🎉 LAB COMPLETED SUCCESSFULLY – CAMPUSPERKS 🎉 ${RESET}"
 echo -e "${CYAN}${BOLD}==================================================${RESET}"
 echo
 echo -e "${RED}${BOLD}🔗 https://www.youtube.com/@CampusPerkss${RESET}"
 echo -e "${GREEN}${BOLD}Like 👍 | Share 🔁 | Subscribe 🔔${RESET}"
-
