@@ -6,7 +6,7 @@ echo "=========================================="
 echo "     🚀 PERKVERSE AUTO LAB FIX SCRIPT 🚀"
 echo "=========================================="
 
-ZONE="us-west1-b"
+ZONE="us-east1-c"
 
 echo "Setting zone..."
 gcloud config set compute/zone $ZONE
