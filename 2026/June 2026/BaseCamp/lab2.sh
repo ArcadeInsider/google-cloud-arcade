@@ -263,6 +263,29 @@ spinner $pid
 wait $pid
 
 echo
+echo "${YELLOW_TEXT}Waiting for health checks...${RESET_FORMAT}"
+sleep 30
+
+IPADDRESS=$(gcloud compute forwarding-rules describe www-rule \
+    --region=$REGION \
+    --format="get(IPAddress)")
+
+echo
+echo "${GREEN_TEXT}${BOLD_TEXT}LOAD BALANCER CREATED SUCCESSFULLY${RESET_FORMAT}"
+echo "${CYAN_TEXT}Load Balancer IP:${RESET_FORMAT} ${WHITE_TEXT}${BOLD_TEXT}$IPADDRESS${RESET_FORMAT}"
+echo
+
+# ========================= TEST LOAD BALANCER =========================
+
+echo "${GREEN_TEXT}${BOLD_TEXT}▬▬▬▬▬▬▬▬▬ TESTING LOAD BALANCER ▬▬▬▬▬▬▬▬▬${RESET_FORMAT}"
+
+for i in {1..10}
+do
+    curl -s http://$IPADDRESS
+    echo
+done
+
+echo
 echo
 echo "${CYAN_TEXT}${BOLD_TEXT}=======================================================${RESET_FORMAT}"
 echo "${CYAN_TEXT}${BOLD_TEXT}              LAB COMPLETED SUCCESSFULLY!              ${RESET_FORMAT}"
